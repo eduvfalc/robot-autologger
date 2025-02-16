@@ -1,0 +1,60 @@
+@startuml Robot Autologger Class Diagram
+
+package "Robot Framework" {
+    abstract ListenerVx {
+        + start_suite(data, result) : None
+        + end_suite(data, result) : None
+        + start_test(data, result) : None
+        + end_test(data, result) : None
+        + start_keyword(data, implementation) : None
+        + end_keyword(data, implementation) : None
+        + report_file(path) : None
+        + log_file(path) : None
+        + output_file(path) : None
+    }
+}
+
+class Listener {
+    + start_suite(data, result) : None
+    + end_suite(data, result) : None
+    + start_test(data, result) : None
+    + end_test(data, result) : None
+    + start_keyword(data, implementation) : None
+    + end_keyword(data, implementation) : None
+    + report_file(path) : None
+    + log_file(path) : None
+    + output_file(path) : None
+}
+
+class AutoLogger {
+    + start_suite(data, result) : None
+    + end_suite(data, result) : None
+    + start_test(data, result) : None
+    + end_test(data, result) : None
+    + start_keyword(data, implementation) : None
+    + end_keyword(data, implementation) : None
+    + report_file(path) : None
+    + log_file(path) : None
+    + output_file(path) : None
+}
+
+abstract ICustomTrace {
+    + build_trace(data, result) : Trace
+}
+
+class StartKeywordTrace {
+    + build_trace(data, result) : Trace
+}
+
+class EndKeywordTrace {
+    + build_trace(data, result) : Trace
+}
+
+Listener .u.|> ListenerVx : implements
+Listener -r-> AutoLogger : uses
+StartKeywordTrace .u.|> ICustomTrace : implements
+EndKeywordTrace .u.|> ICustomTrace : implements
+AutoLogger -u-> StartKeywordTrace : uses
+AutoLogger -u-> EndKeywordTrace : uses
+
+@enduml
