@@ -16,9 +16,9 @@ from robot.result import (TestSuite as TestSuiteResult,
                           Keyword as KeywordResult)
 
 class KeywordEvent(Enum):
-    """Types of listener events
+    """Types of Listener events
     """
-    start= auto()
+    start = auto()
     end = auto()
 
 class AutoLogger:
@@ -109,8 +109,7 @@ class AutoLogger:
             args_trace = Trace(color=Color.magenta.value, text=args).to_str()
             # print the whole thing combined
             print((indent + label_or_adjust if (self.curr_kw_lvl - 1) else '') + 
-                  trace + 
-                  ((k_tab + args_trace) if args else ''), end=terminator)
+                  trace + ((k_tab + args_trace) if args else ''), end=terminator)
 
     def end_keyword(self, data: KeywordData, 
                          implementation: UserKeyword, 
@@ -135,8 +134,7 @@ class AutoLogger:
             elapsed_time = Trace(color=Color.blue.value, text=('finished in ' + dt_secs + ' seconds')).to_str()
             # print the whole thing combined
             print((indent + adjust if self.curr_kw_lvl else '') + 
-                  trace + 
-                  ((k_tab + elapsed_time) if dt_secs else ''))
+                  trace + ((k_tab + elapsed_time) if dt_secs else ''))
 
     def report_file(self, path: str) -> None:
         """Print path to report file
@@ -189,6 +187,8 @@ class AutoLogger:
         return elapsed_time.total_seconds()
 
     def _init_log_factories(self) -> None:
+        """Initialize the log factories used in the Listener events
+        """
         self.start_keyword_factory = StartKeywordTraceFactory()
         self.end_keyword_factory = EndKeywordTraceFactory()
 
@@ -202,6 +202,8 @@ class AutoLogger:
         return args
     
     def _update_kw_tracking(self, event: KeywordEvent) -> None:
+        """Update keyword tracking based on event type
+        """
         if event == KeywordEvent.start:
             self.curr_kw_lvl += 1
         elif event == KeywordEvent.end:

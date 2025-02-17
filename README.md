@@ -1,5 +1,5 @@
 # robot-autologger
-The Robot Autologger is a terminal logger for Robot Framework that uses the linstener interface. It can be used to automatically log listener events and provide real time test execution reporting. By default, Robot Framework's native logging doesn't provide much information about test performance _while_ the text is executed. The Robot Autologger is here to enable real time reporting to Robot Framework users.
+The Robot Autologger is a terminal logger for Robot Framework that uses the Listener interface. It can be used to automatically log listener events and provide real time test execution reporting. By default, Robot Framework's native logging doesn't provide much information about test performance _while_ the text is executed. The Robot Autologger is here to enable real time reporting to Robot Framework users.
 
 An example of the Robot Autologger output is:
 

@@ -7,7 +7,7 @@ from robot.running import Keyword as KeywordData, LibraryKeyword, UserKeyword
 from robot.result import Keyword as KeywordResult
 
 class ICustomTrace(ABC):
-    """An interface for the customization of traces logged during listener events
+    """An interface for the customization of traces logged during Listener events
     """
     @abstractmethod
     def create_trace(self, data: KeywordData, 

@@ -8,7 +8,7 @@ from robot.result import (TestSuite as TestSuiteResult,
 from AutoLogger import AutoLogger
 
 class Listener:
-    """Robot Framework listener v3 interface implementation.
+    """Robot Framework Listener v3 interface implementation.
     """
     ROBOT_LISTENER_API_VERSION = 3
 
