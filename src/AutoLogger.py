@@ -1,11 +1,14 @@
 from shutil import get_terminal_size
 from datetime import datetime
-from typing import Union
 from enum import Enum, auto
+from typing import Union
 
+from TraceFactories import (StartKeywordTraceFactory,
+                            EndKeywordTraceFactory, 
+                            EndTestAndSuiteTraceFactory)
 from Constants import k_newline_skip_list, k_skip_list, k_tab
 from TraceElements import Trace, Color, Label
-from TraceFactories import StartKeywordTraceFactory, EndKeywordTraceFactory
+from HyperlinkFactory import HyperlinkFactory
 
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running import (TestSuite as TestSuiteData, 
@@ -25,14 +28,20 @@ class AutoLogger:
     """Logging facility 
     """
     def __init__(self, print_args: bool = False,
-                 print_elapsed_time: bool = False):
+                 print_elapsed_time: bool = False,
+                 index_keywords: bool = False,
+                 code_editor: str = 'code'):
         """Constructor for the AutoLogger class.
         """
-        self._init_log_factories()
-        self._print_legend()
-        self.builtin = BuiltIn()
         self.print_args = print_args
         self.print_elapsed_time = print_elapsed_time
+        self.index_keywords = index_keywords
+        self.code_editor = code_editor
+        self.uri_factory = HyperlinkFactory(self.code_editor)
+        self.builtin = BuiltIn()
+        self._init_log_factories()
+        self._print_legend()
+
 
     def start_suite(self, data: TestSuiteData, 
                     result: TestSuiteResult) -> None:
@@ -66,19 +75,18 @@ class AutoLogger:
         - number of tests skipped
         - suite result (PASS or FAIL)
         """
-        color = Color.green if 'PASS' in result.status else Color.red
         self._print_divider("=")
-        self._print_suite_stats(result)
-        print(f'Suite result: {Trace(color=color.value, text=result.status).to_str()}')
+        self._print_suite_stats(result=result)
+        trace = self.end_test_and_suite_factory.create_trace(result=result).to_str()
+        print(f'Suite result: {trace}')
         self._print_divider("=")
 
     def end_test(self, data: TestCaseData, 
                  result: TestCaseResult):
         """Print test case elapsed time and the test result.
         """
-        color = Color.green if 'PASS' in result.status else Color.red
         time_elapsed = self._compute_time_elapsed_in_seconds(result.starttime, result.endtime)
-        trace = Trace(color=color.value, text=result.status).to_str()
+        trace = self.end_test_and_suite_factory.create_trace(result=result).to_str()
         self._print_divider("=")
         print(f'Test case finished in {time_elapsed} seconds\n'
               f'Test result: {trace}')
@@ -91,7 +99,7 @@ class AutoLogger:
         <indentation> <label or adjust> <trace> <arguments>
 
         The <label or adjust> is printed if the keyword called is not in the test case body (root level)
-        The <arguments> are only printed if the keyword is not in the skip list AND has arguments.
+        The <arguments> are only printed if the keyword is not in the skip list and has arguments.
         """
         self._update_kw_tracking(KeywordEvent.start)
         # ignore keywords that were not executed
@@ -101,7 +109,9 @@ class AutoLogger:
             # add hourglass tag for first nested call, adjust indent otherwise
             label_or_adjust = f'{Trace(label=Label.call.value).to_str()} ' if self.curr_kw_lvl > self.prev_kw_lvl else '  '
             # get trace from start keyword trace factory
-            trace = self.start_keyword_factory.create_trace(data=data).to_str()
+            trace = self.start_keyword_factory.create_trace(data=data)
+            # add uri hyperlink
+            trace.text = self.uri_factory.create_hyperlink(implementation, trace.text) if self.index_keywords else trace.text
             # some keywords write to the terminal so we have to adapt
             terminator = '\n' if data.name not in k_newline_skip_list else ' '
             # process arguments and create its trace
@@ -109,7 +119,7 @@ class AutoLogger:
             args_trace = Trace(color=Color.magenta.value, text=args).to_str()
             # print the whole thing combined
             print((indent + label_or_adjust if (self.curr_kw_lvl - 1) else '') + 
-                  trace + ((k_tab + args_trace) if args else ''), end=terminator)
+                  trace.to_str() + ((k_tab + args_trace) if args else ''), end=terminator)
 
     def end_keyword(self, data: KeywordData, 
                          implementation: UserKeyword, 
@@ -125,7 +135,9 @@ class AutoLogger:
             # adjust indent if keyword is not at root level
             adjust = '  ' if self.curr_kw_lvl else ''
             # get trace from end keyword trace factory
-            trace = self.end_keyword_factory.create_trace(data=data, result=result).to_str()
+            trace = self.end_keyword_factory.create_trace(data=data, result=result)
+            # add uri hyperlink
+            trace.text =  self.uri_factory.create_hyperlink(implementation, trace.text) if self.index_keywords else trace.text
             # if the keyword failed, there should be a message
             msg = ': ' + result.message if result.message else ''
             msg = Trace(color=Color.red.value, text=msg).to_str()
@@ -134,23 +146,17 @@ class AutoLogger:
             elapsed_time = Trace(color=Color.blue.value, text=('finished in ' + dt_secs + ' seconds')).to_str()
             # print the whole thing combined
             print((indent + adjust if self.curr_kw_lvl else '') + 
-                  trace + ((k_tab + elapsed_time) if dt_secs else ''))
+                  trace.to_str() + ((k_tab + elapsed_time) if dt_secs else ''))
 
     def report_file(self, path: str) -> None:
-        """Print path to report file
-        """
         print(Trace(label=Label.report.value, 
                     text=f'Report file path: ' + str(path)).to_str())
 
     def log_file(self, path: str) -> None:
-        """Print path to log file
-        """
         print(Trace(label=Label.report.value, 
                     text=f'Log file path: ' + str(path)).to_str())
 
     def output_file(self, path: str) -> None:
-        """Print path to output file
-        """
         print(Trace(label=Label.report.value, 
                     text=f'Output file path: ' + str(path)).to_str())
 
@@ -191,6 +197,7 @@ class AutoLogger:
         """
         self.start_keyword_factory = StartKeywordTraceFactory()
         self.end_keyword_factory = EndKeywordTraceFactory()
+        self.end_test_and_suite_factory = EndTestAndSuiteTraceFactory()
 
     def _args_to_str(self, data) -> str:
         return k_tab.join(str(arg) for arg in self._get_args_list(data))

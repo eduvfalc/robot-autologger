@@ -6,7 +6,7 @@ from typing import Union
 from robot.running import Keyword as KeywordData, LibraryKeyword, UserKeyword
 from robot.result import Keyword as KeywordResult
 
-class ICustomTrace(ABC):
+class ITraceFactory(ABC):
     """An interface for the customization of traces logged during Listener events
     """
     @abstractmethod

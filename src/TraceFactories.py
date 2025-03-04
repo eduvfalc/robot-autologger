@@ -1,13 +1,13 @@
 from typing import Union
 
-from ICustomTrace import ICustomTrace
+from ITraceFactory import ITraceFactory
 from TraceElements import Trace, Label, Color
 
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running import Keyword as KeywordData, LibraryKeyword, UserKeyword
 from robot.result import Keyword as KeywordResult
 
-class StartKeywordTraceFactory(ICustomTrace):
+class StartKeywordTraceFactory(ITraceFactory):
     def __init__(self):
         self.lib_builtin = BuiltIn()
 
@@ -45,8 +45,8 @@ class StartKeywordTraceFactory(ICustomTrace):
             case _:
                 return self.lib_builtin.replace_variables(data.name)
             
-class EndKeywordTraceFactory(ICustomTrace):
-    """An implementation of ICustomTrace for end keyword events
+class EndKeywordTraceFactory(ITraceFactory):
+    """An implementation of ITraceFactory for end keyword events
     """
     def __init__(self):
         self.lib_builtin = BuiltIn()
@@ -67,5 +67,42 @@ class EndKeywordTraceFactory(ICustomTrace):
                 return Label.success.value
             case _ if 'FAIL' in result.status:
                 return Label.fail.value
+            case _ if 'NOT RUN' in result.status:
+                return ''
+            
+class EndTestAndSuiteTraceFactory(ITraceFactory):
+    """An implementation of ITraceFactory for end of test and suite
+    """
+    def __init__(self):
+        self.lib_builtin = BuiltIn()
+
+    def create_trace(self, data: KeywordData = None, 
+                     implementation: Union[LibraryKeyword, UserKeyword] = None, 
+                     result: KeywordResult = None) -> Trace:
+        """Creates a trace for the end keyword event
+        """
+        return Trace(label=self._get_label(result),
+                     color=self._get_color(result),
+                     text=result.status)
+
+    def _get_label(self, result) -> str:
+        """End keyword trace label rules
+        """
+        match result:
+            case _ if 'PASS' in result.status:
+                return Label.success.value
+            case _ if 'FAIL' in result.status:
+                return Label.fail.value
+            case _ if 'NOT RUN' in result.status:
+                return ''
+            
+    def _get_color(self, result) -> str:
+        """End keyword trace label rules
+        """
+        match result:
+            case _ if 'PASS' in result.status:
+                return Color.green.value
+            case _ if 'FAIL' in result.status:
+                return Color.red.value
             case _ if 'NOT RUN' in result.status:
                 return ''

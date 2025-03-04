@@ -13,8 +13,13 @@ class Listener:
     ROBOT_LISTENER_API_VERSION = 3
 
     def __init__(self, print_args: bool = False,
-                 print_elapsed_time: bool = False):
-        self.logger = AutoLogger(print_args, print_elapsed_time)
+                 print_elapsed_time: bool = False,
+                 index_keywords: bool = False,
+                 editor: str = None):
+        self.logger = AutoLogger(print_args,
+                                 print_elapsed_time, 
+                                 index_keywords,
+                                 editor)
 
     def start_suite(self, data: TestSuiteData, 
                     result: TestSuiteResult):

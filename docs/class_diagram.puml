@@ -38,7 +38,7 @@ class AutoLogger {
     + output_file(path) : None
 }
 
-abstract ICustomTrace {
+abstract ITraceFactory {
     + build_trace(data, result) : Trace
 }
 
@@ -52,8 +52,8 @@ class EndKeywordTrace {
 
 Listener .u.|> ListenerVx : implements
 Listener -r-> AutoLogger : uses
-StartKeywordTrace .u.|> ICustomTrace : implements
-EndKeywordTrace .u.|> ICustomTrace : implements
+StartKeywordTrace .u.|> ITraceFactory : implements
+EndKeywordTrace .u.|> ITraceFactory : implements
 AutoLogger -u-> StartKeywordTrace : uses
 AutoLogger -u-> EndKeywordTrace : uses
 
