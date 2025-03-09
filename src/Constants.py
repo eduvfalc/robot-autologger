@@ -18,10 +18,13 @@ k_tab = 4 * ' '
 k_editor_cfg_map = {'code': 
                         [
                             {
-                                'uri_scheme' : 'vscode'
+                                'uri_scheme' : 'vscode',
+                                'args' : 
+                                    [
+                                        {
+                                            'reuseWindow' : "true"
+                                        }
+                                    ]
                             }
                         ]
                     }
-                            
-# path used to check if linux is running inside WSL
-k_wsl_bin_misc_path = "/proc/sys/fs/binfmt_misc/WSL"

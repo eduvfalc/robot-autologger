@@ -1,49 +1,40 @@
-from platform import system, uname
-from os.path import normpath, exists
+from urllib.parse import urlencode
+from os.path import normpath
+from platform import system
 from enum import Enum, auto
 from typing import Union
-from platform import system
 
 from TraceElements import TextEditor
-from Constants import k_editor_cfg_map, k_wsl_bin_misc_path
+from Constants import k_editor_cfg_map
 
 from robot.running import Keyword as LibraryKeyword, UserKeyword
 
-class OSType(Enum):
-    linux = auto()
-    wsl = auto()
-    windows = auto()
-    unsupported = auto()
-
 class HyperlinkFactory:
-    def __init__(self, editor: TextEditor = None):
-        """Constructor of the Hyperlink Factory
+    def __init__(self, editor: str):
+        """Initialize HyperlinkFactory with an editor
         """
         self.editor = editor
-        self._detect_os()
 
     def create_hyperlink(self, implementation: Union[LibraryKeyword, UserKeyword], text: str) -> str:
-        """Add hyperlink to keyword name pointing to source file and line number
+        """Generate a hyperlink to a keyword's source file and line number
         """
-        if self.editor is None:
-            return text
+        if not self.editor:
+            return implementation.name  # Return plain text if no editor is set
+
         path = normpath(implementation.source)
         lineno = implementation.lineno
-        uri_scheme = k_editor_cfg_map[self.editor][0]['uri_scheme']
-        url = f"{uri_scheme}://file//wsl.localhost/Ubuntu-22.04/{path}:{lineno}?reuseWindow=true"
-        return f"\033]8;;{url}\033\\{text}\033]8;;\033\\"
-    
-    def _detect_os(self) -> None:
-        """Determine operating system
-        """
-        os = system()
-        if os == "Windows":
-            self.os = OSType.windows
-        elif os == "Linux":
-            # Check if running inside WSL
-            if "microsoft" in uname().release.lower() or exists(k_wsl_bin_misc_path):
-                self.os = OSType.wsl
-            else:
-                self.os = OSType.linux
-        else:
-            self.os = OSType.unsupported
+        editor_config = k_editor_cfg_map.get(self.editor, [{}])[0]  # Get editor config or empty dict
+        uri_scheme = editor_config.get("uri_scheme", "")
+        uri_args_list = editor_config.get("args", [])
+        # Flatten args list of dicts into a single dictionary
+        uri_args_dict = {key: value for arg in uri_args_list for key, value in arg.items()}
+        # Convert dictionary to query string (e.g., "reuseWindow=true")
+        query_string = urlencode(uri_args_dict) if uri_args_dict else ""
+        # Construct the hyperlink
+        hyperlink = (
+            (f"{uri_scheme}://" if uri_scheme else "") +
+            f"file:/{path}:{lineno}" +
+            (f"?{query_string}" if query_string else "")
+        )
+
+        return f"\033]8;;{hyperlink}\033\\{text}\033]8;;\033\\"
