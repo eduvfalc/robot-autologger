@@ -2,6 +2,7 @@ from typing import Union
 
 from ITraceFactory import ITraceFactory
 from TraceElements import Trace, Label, Color
+from Utils import args_to_str
 
 from robot.libraries.BuiltIn import BuiltIn
 from robot.running import Keyword as KeywordData, LibraryKeyword, UserKeyword
@@ -39,7 +40,7 @@ class StartKeywordTraceFactory(ITraceFactory):
             case _ if data.name == "Log":
                 return self.lib_builtin.replace_variables(data.args[0])
             case _ if data.name == "Log Many":
-                return self.args_to_str(data)
+                return args_to_str(data)
             case _ if data.name == "Log To Console":
                 return ''
             case _:
