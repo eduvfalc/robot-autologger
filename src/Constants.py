@@ -15,16 +15,26 @@ k_skip_list = [
 k_tab = 4 * ' '
 
 # editor configurations
-k_editor_cfg_map = {'code': 
+k_editor_cfg_map = {
+                    'code': 
                         [
                             {
                                 'uri_scheme' : 'vscode',
+                                'use_lieno' : True,
                                 'args' : 
                                     [
                                         {
                                             'reuseWindow' : "true"
                                         }
                                     ]
+                            }
+                        ],
+                    'default' :
+                        [
+                            {
+                                'uri_scheme' : '',
+                                'use_lineno' : False,
+                                'args' : []
                             }
                         ]
                     }

@@ -13,6 +13,7 @@ class HyperlinkFactory:
         self.editor = editor
         editor_config = k_editor_cfg_map.get(self.editor, [{}])[0]
         self.uri_scheme = editor_config.get("uri_scheme", "")
+        self.use_lineno = editor_config.get("use_lineno", False)
         uri_args_list = editor_config.get("args", [])
         uri_args_dict = {key: value for arg in uri_args_list for key, value in arg.items()}
         self.uri_args_query_str = urlencode(uri_args_dict) if uri_args_dict else ""
@@ -28,9 +29,10 @@ class HyperlinkFactory:
         # Construct the uri
         uri = (
             (f"{self.uri_scheme}://" if self.uri_scheme else "") +
-            f"file:/{normpath(implementation.source)}:{implementation.lineno}" +
+            (f"file://{normpath(implementation.source)}") +
+            (f":{implementation.lineno}" if self.use_lineno else "") +
             (f"?{self.uri_args_query_str}" if self.uri_args_query_str else "")
         )
-
+        
         # Create and return hyperlink
         return f"\033]8;;{uri}\033\\{text}\033]8;;\033\\"
