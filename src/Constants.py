@@ -20,7 +20,7 @@ k_editor_cfg_map = {
                         [
                             {
                                 'uri_scheme' : 'vscode',
-                                'use_lieno' : True,
+                                'use_lineno' : True,
                                 'args' : 
                                     [
                                         {

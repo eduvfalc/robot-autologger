@@ -50,11 +50,13 @@ class EndKeywordTrace {
     + build_trace(data, result) : Trace
 }
 
-Listener .u.|> ListenerVx : implements
-Listener -r-> AutoLogger : uses
-StartKeywordTrace .u.|> ITraceFactory : implements
-EndKeywordTrace .u.|> ITraceFactory : implements
-AutoLogger -u-> StartKeywordTrace : uses
-AutoLogger -u-> EndKeywordTrace : uses
+Listener -u-|> ListenerVx
+Listener -r-* AutoLogger
+StartKeywordTrace -u-|> ITraceFactory
+EndKeywordTrace -u-|> ITraceFactory
+EndTestAndSuiteTraceFactory -u-|> ITraceFactory
+AutoLogger -u-* StartKeywordTrace
+AutoLogger -u-* EndKeywordTrace
+AutoLogger -u-* EndTestAndSuiteTraceFactory
 
 @enduml
